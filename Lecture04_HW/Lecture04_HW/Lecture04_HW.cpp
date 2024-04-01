@@ -1,6 +1,10 @@
 ﻿#pragma comment(lib,"Opengl32.lib")
-#include<GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
+
+bool rightMouseDown = false;
+bool leftMouseDown = false;
+bool dragging = false;
 
 void errorCallback(int error, const char* description)
 {
@@ -14,24 +18,45 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
     {
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        if (action == GLFW_PRESS)
+        {
+            rightMouseDown = true;
+            dragging = false;
+            glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            rightMouseDown = false;
+            dragging = false;
+            glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_FALSE);
+        }
     }
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    else if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
-        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        if (action == GLFW_PRESS)
+        {
+            leftMouseDown = true;
+            dragging = false;
+            glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            leftMouseDown = false;
+            dragging = false;
+            glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_FALSE);
+        }
     }
-    else
-    {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (rightMouseDown || leftMouseDown)
+    {
+        dragging = true;
+    }
+}
 
 int main()
 {
@@ -40,7 +65,6 @@ int main()
         return -1;
 
     GLFWwindow* window;
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(1280, 768, "MuSoeunEngine", NULL, NULL);
 
     if (!window)
@@ -49,19 +73,42 @@ int main()
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSetErrorCallback(errorCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
 
-    /* Loop until the user closes the window */
+
     while (!glfwWindowShouldClose(window))
     {
-        glfwPollEvents();
+        if (rightMouseDown && dragging)
+        {
+            glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else if (leftMouseDown && dragging)
+        {
+            glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else if (rightMouseDown)
+        {
+            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else if (leftMouseDown)
+        {
+            glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else
+        {
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
 
-        //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT);
+        glfwPollEvents();
 
         glfwSwapBuffers(window);
     }
